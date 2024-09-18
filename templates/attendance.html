@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Attendance
+{% endblock %}
+
+{% block main %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Attendance</h1>
+    <form action="/attendance" method="post">
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="subject" class="form-label">Subject</label>
+                    <select name="subject" id="subject" class="form-select" required>
+                        <option disabled selected value="">Select Subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="attendance" class="form-label">Attendance Missed</label>
+                    <input type="number" name="attendance" id="attendance" placeholder="Missing Attendance" class="form-control" required>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

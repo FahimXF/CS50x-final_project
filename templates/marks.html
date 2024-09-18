@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Add Marks
+{% endblock %}
+
+{% block main %}
+    <form action="/marks" method="post" class="container mt-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="subject" class="form-label">Subject</label>
+                <select name="subject" id="subject" class="form-select">
+                    <option disabled selected value="">Select Subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="exam" class="form-label">Exam</label>
+                <select name="exam" id="exam" class="form-select">
+                    <option disabled selected value="">Select Exam</option>
+                    {% for exam in exams %}
+                        <option value="{{ exam }}">{{ exam }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="marks" class="form-label">Marks</label>
+            <input autocomplete="off" autofocus class="form-control" name="marks" id="marks" placeholder="Enter Marks" type="number">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
