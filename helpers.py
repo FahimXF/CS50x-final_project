@@ -1,5 +1,6 @@
 from flask import redirect, render_template, request, session
 from functools import wraps
+from datetime import date, datetime
 
 
 def apology(message, code=400):
@@ -41,3 +42,13 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+# Custom Jinja filter to calculate the difference in days
+def days_until(target_date_str):
+    today = date.today()
+    try:
+        target_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
+        delta = target_date - today
+        return delta.days
+    except ValueError:
+        return "Invalid date"

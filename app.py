@@ -4,16 +4,19 @@ from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime
+from datetime import datetime,date
 import re
 
-from helpers import apology, login_required
+from helpers import apology, login_required, days_until
+
 
 exams = ["quiz1", "quiz2", "quiz3", "quiz4", "midterm"]
 
 # Configure application
 app = Flask(__name__)
 
+# Register the custom filter with Jinja
+app.jinja_env.filters['days_until'] = days_until
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -180,3 +183,56 @@ def attendance():
     subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
     subjects = json.loads(subjects_json)
     return render_template("attendance.html", subjects=subjects)
+
+
+@app.route("/goals", methods=["GET", "POST"])
+@login_required
+def goals():
+    if request.method =="POST":
+        goals = request.form.getlist("goal[]")
+        times=request.form.getlist("time[]")
+        if not goals or not times or len(goals) != len(times):
+            return apology("must provide goals and times", 400)
+        goals_times = []
+        for goal, time in zip(goals, times):
+            try:
+                datetime_obj = datetime.strptime(time, "%Y-%m-%d")
+                date_obj = datetime_obj.date()
+                goals_times.append({"goal": goal, "time": date_obj.isoformat()})
+            except ValueError:
+                return apology("Invalid date format", 400)
+
+        # Retrieve existing goals from the database
+        existing_goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
+
+        if existing_goals_json:
+            existing_goals = json.loads(existing_goals_json)
+        else:
+            existing_goals = []
+
+        # Merge the new goals with the existing goals
+        merged_goals = existing_goals + goals_times
+
+        # Convert the merged goals back to a JSON string
+        merged_goals_json = json.dumps(merged_goals)
+        
+    
+        # Store the JSON string in the database
+        try:
+            db.execute("UPDATE students SET goals = ? WHERE id = ?", merged_goals_json, session["user_id"])
+        except ValueError:
+            return apology("error inserting goals", 400)
+        
+        return render_template("goals.html",goals=merged_goals)
+    
+    goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
+    if goals_json:
+        goals=json.loads(goals_json)
+    else:
+        goals=[]
+    return render_template("goals.html",goals=goals)
+
+
+
+        
+

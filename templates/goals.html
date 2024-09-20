@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Goals
+{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Enter Goal</h1>
+        <form action="/goals" method="POST">
+            <div id="goal-inputs">
+                <div class="input-group mb-3">
+                    <input type="text" name="goal[]" class="form-control" placeholder="Enter a Goal">
+                    <input type="text" name="time[]" class="form-control" placeholder="Time limit in YEAR-MONTH-DAY">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-primary add-goal-btn">Add</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="add-goal" class="btn btn-secondary mb-3">Add Goal</button>
+            <button class="btn btn-success mb-3" type="submit">Submit Goals</button>
+        </form>
+        <h1 class="text-center mb-4">Current Goals</h1>
+        <ul id="goals" class="list-group">
+            {% for goal in goals %}
+                <li class="list-group-item">
+                    {{ goal.goal }} - {{ goal.time }} ({{ goal.time | days_until }} days left)
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        document.getElementById('add-goal').addEventListener('click', function() {
+            const goalInputs = document.getElementById('goal-inputs');
+            const newInputGroup = document.createElement('div');
+            newInputGroup.className = 'input-group mb-3';
+            newInputGroup.innerHTML = `
+                <input type="text" name="goal[]" class="form-control" placeholder="Enter a goal">
+                <input type="text" name="time[]" class="form-control" placeholder="Time limit in YEAR-MONTH-DAY">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-primary add-goal-btn">Add</button>
+                </div>
+            `;
+            goalInputs.appendChild(newInputGroup);
+        });
+    </script>
+{% endblock %}
