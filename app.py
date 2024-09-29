@@ -195,13 +195,8 @@ def goals():
             return apology("must provide goals and times", 400)
         goals_times = []
         for goal, time in zip(goals, times):
-            try:
-                datetime_obj = datetime.strptime(time, "%Y-%m-%d")
-                date_obj = datetime_obj.date()
-                goals_times.append({"goal": goal, "time": date_obj.isoformat()})
-            except ValueError:
-                return apology("Invalid date format", 400)
-
+            goals_times.append({"goal": goal, "time": time})
+    
         # Retrieve existing goals from the database
         existing_goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
 
