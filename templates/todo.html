@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}Todo{% endblock %}
+
+{% block main %}
+    <h1 class="my-4">To-Do List</h1>
+    <form action="/todo" method="POST" class="mb-4">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <input type="text" name="todo[]" class="form-control mb-2" placeholder="Enter a new task">
+            </div>
+            <div class="col-auto" id="time_limit_div" style="display: none;">
+                <input type="date" name="time_limit[]" class="form-control mb-2" id="time_limit">
+            </div>
+            <div class="col-auto">
+                <select class="form-control mb-2" id="date-options">
+                    <option value="">Select due date</option>
+                    <option value="1">1 day</option>
+                    <option value="7">7 days</option>
+                    <option value="14">14 days</option>
+                    <option value="30">1 month</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary mb-2">Add Task</button>
+            </div>
+        </div>
+    </form>
+    <ul class="list-group">
+        {% for task in tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <form method="POST" class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <input type="hidden" name="task_id" value="{{ task['id'] }}">
+                        <input type="checkbox" onclick="this.form.submit()">
+                        <span>{{ task['todo'] }}</span>
+                    </div>
+                    <span class="mx-auto">Due: {{ task['time_limit'] }}</span>
+                    <span class="time-remaining" data-due-date="{{ task['time_limit'] }}"></span>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateOptions = document.getElementById('date-options');
+            const timeLimitInput = document.getElementById('time_limit');
+            const timeLimitDiv = document.getElementById('time_limit_div');
+
+            dateOptions.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (selectedValue === 'custom') {
+                    timeLimitDiv.style.display = 'block';
+                    timeLimitInput.value = '';
+                } else {
+                    timeLimitDiv.style.display = 'none';
+                    const daysToAdd = parseInt(selectedValue);
+                    if (!isNaN(daysToAdd)) {
+                        const today = new Date();
+                        today.setDate(today.getDate() + daysToAdd);
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        timeLimitInput.value = `${year}-${month}-${day}`;
+                    }
+                }
+            });
+
+            const timeRemainingElements = document.querySelectorAll('.time-remaining');
+            timeRemainingElements.forEach(function(element) {
+                const dueDate = new Date(element.getAttribute('data-due-date'));
+                const today = new Date();
+                const timeDiff = dueDate - today;
+                const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                element.textContent = daysRemaining > 0 ? `${daysRemaining} days remaining` : 'Due date passed';
+            });
+        });
+    </script>
+{% endblock %}

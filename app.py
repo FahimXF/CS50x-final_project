@@ -1,7 +1,7 @@
 import json
 
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session,url_for
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime,date
@@ -232,6 +232,68 @@ def goals():
         goals=[]
     return render_template("goals.html",goals=goals)
 
+
+@app.route("/todo", methods=["GET", "POST"])
+@login_required
+def todo():
+    if request.method == "POST":
+        if 'task_id' in request.form:
+            task_id = int(request.form.get("task_id"))
+            # Retrieve existing todos from the database
+            existing_todos_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])[0]["todos"]
+            existing_todos = json.loads(existing_todos_json) if existing_todos_json else []
+            # Remove the task with the given task_id
+            existing_todos = [task for task in existing_todos if task["id"] != task_id]
+            # Convert the updated todos back to a JSON string
+            updated_todos_json = json.dumps(existing_todos)
+            # Store the JSON string in the database
+            db.execute("UPDATE students SET todos = ? WHERE id = ?", updated_todos_json, session["user_id"])
+        else:
+            todos = request.form.getlist("todo[]")
+            time_limits = request.form.getlist("time_limit[]")
+            if not todos:
+                return apology("must provide todos", 400)
+            if not time_limits:
+                return apology("must provide time limits", 400)
+            if len(todos) != len(time_limits):
+                return apology("todos and time limits must be of the same length", 400)
+            todos_list = []
+            for todo, time_limit in zip(todos, time_limits):
+                todos_list.append({"id": len(todos_list), "todo": todo, "done": False, "time_limit": time_limit})
+
+            # Retrieve existing todos from the database
+            existing_todos_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])[0]["todos"]
+
+            if existing_todos_json:
+                existing_todos = json.loads(existing_todos_json)
+            else:
+                existing_todos = []
+
+            # Merge the new todos with the existing todos
+            merged_todos = existing_todos + todos_list
+
+            # Convert the merged todos back to a JSON string
+            merged_todos_json = json.dumps(merged_todos)
+
+            # Store the JSON string in the database
+            db.execute("UPDATE students SET todos = ? WHERE id = ?", merged_todos_json, session["user_id"])
+
+        return redirect(url_for("todo"))
+
+    tasks = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])
+    if tasks and tasks[0]["todos"]:
+        tasks = json.loads(tasks[0]["todos"])
+        # Format the time_limit to show only the date
+        """for task in tasks:
+            if task["time_limit"]:
+                try:
+                    task["time_limit"] = datetime.strptime(task["time_limit"], "%Y-%m-%dT%H:%M").strftime("%Y-%m-%d")
+                except ValueError:
+                    # If the format is already %Y-%m-%d, no need to change it
+                    pass"""
+    else:
+        tasks = []
+    return render_template("todo.html", tasks=tasks)
 
 
         
