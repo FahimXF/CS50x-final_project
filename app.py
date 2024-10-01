@@ -39,7 +39,16 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+    student_id = session["user_id"]
+    subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
+    subjects = json.loads(subjects_json)
+    subjects_info = []
+    for subject in subjects:
+        sanitized_subject = re.sub(r'\W+', '_', subject)
+        subject_info = db.execute(f"SELECT quiz1, quiz2, quiz3, quiz4, midterm, missing_attendance, credit FROM {sanitized_subject} WHERE student_id = ?", student_id)[0]
+        subjects_info.append({"name": subject, "info": subject_info})    
+
+    return render_template("index.html", subjects=subjects_info)
 
 
 
@@ -81,7 +90,7 @@ def register():
         for subject, credit in zip(subjects, credits):
             sanitized_subject = re.sub(r'\W+', '_', subject)  # Replace non-alphanumeric characters with underscores
             try:
-                db.execute(f"CREATE TABLE IF NOT EXISTS {sanitized_subject} (student_id INTEGER, quiz1 REAL, quiz2 REAL, quiz3 REAL, quiz4 REAL, midterm REAL, missing_attendance INTEGER DEFAULT 0, credit INTEGER, FOREIGN KEY(student_id) REFERENCES students(id))")
+                db.execute(f"CREATE TABLE IF NOT EXISTS {sanitized_subject} (student_id INTEGER, quiz1 REAL DEFAULT 0, quiz2 REAL DEFAULT 0, quiz3 REAL DEFAULT 0, quiz4 REAL DEFAULT 0, midterm REAL DEFAULT 0, missing_attendance INTEGER DEFAULT 0, credit INTEGER, FOREIGN KEY(student_id) REFERENCES students(id))")
                 db.execute(f"INSERT INTO {sanitized_subject} (student_id, credit) VALUES (?, ?)", student_id, credit)
             except ValueError:
                 return apology("error creating table or inserting data", 400)
@@ -289,6 +298,11 @@ def todo():
     else:
         tasks = []
     return render_template("todo.html", tasks=tasks)
+
+
+
+    
+
 
 
         

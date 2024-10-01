@@ -5,5 +5,90 @@ Index
 {% endblock %}
 
 {% block main %}
+<h1>Index</h1>
+
+<table class="table table-bordered">
+  <thead class="thead-dark">
+    <tr>
+      <th style="width: 75%;">Marks</th>
+      <th style="width: 25%;">Attendance Alert</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="width: 75%;">
+        <div class="d-flex justify-content-between flex-wrap">
+          <table class="table table-bordered mb-3" style="width: 15%;">
+            <thead class="thead-light">
+              <tr>
+                <th>Subjects</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Quiz-1</td></tr>
+              <tr><td>Quiz-2</td></tr>
+              <tr><td>Quiz-3</td></tr>
+              <tr><td>Quiz-4</td></tr>
+              <tr><td>Midterm</td></tr>
+              <tr><td>Attendance Missed</td></tr>
+              <tr><td>Mark Required</td></tr>
+            </tbody>
+          </table>
+          {% for subject in subjects %}
+          <table class="table table-bordered mb-3" style="width: 25%;">
+            <thead class="thead-light">
+              <tr>
+                <th>{{ subject.name }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set values = subject['info'].values() | list %}
+              {% set marks = values[:-2] | sum %}
+              {% for value in values[:-1] %}
+              <tr>
+                <td>{{ value }}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                <td>{{ values[-1] * 80 - marks }}</td>
+              </tr>
+            </tbody>
+          </table>
+          {% if loop.index % 3 == 0 %}
+          </div>
+          <div class="d-flex justify-content-between flex-wrap">
+            <table class="table table-bordered mb-3" style="width: 15%;">
+              <thead class="thead-light">
+                <tr>
+                  <th>Subjects</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Quiz-1</td></tr>
+                <tr><td>Quiz-2</td></tr>
+                <tr><td>Quiz-3</td></tr>
+                <tr><td>Quiz-4</td></tr>
+                <tr><td>Midterm</td></tr>
+                <tr><td>Attendance Missed</td></tr>
+                <tr><td>Mark Required</td></tr>
+              </tbody>
+            </table>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </td>
+      <td style="width: 25%;">
+        <!-- Add content for Attendance Alert here -->
+         {% for subject in subjects %}
+          {% if subject['info']['missing_attendance'] >= 2 %}
+          <div class="alert alert-danger" role="alert">
+            {{ subject['info']['missing_attendance'] }} classes already missed in {{ subject.name }}
+          </div>
+          {% endif %}
+          {% endfor %}
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 {% endblock %}
