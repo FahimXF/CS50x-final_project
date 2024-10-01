@@ -5,7 +5,7 @@ Index
 {% endblock %}
 
 {% block main %}
-<h1>Index</h1>
+<h1>Academics</h1>
 
 <table class="table table-bordered">
   <thead class="thead-dark">
@@ -79,13 +79,55 @@ Index
       </td>
       <td style="width: 25%;">
         <!-- Add content for Attendance Alert here -->
-         {% for subject in subjects %}
+        {% for subject in subjects %}
           {% if subject['info']['missing_attendance'] >= 2 %}
           <div class="alert alert-danger" role="alert">
             {{ subject['info']['missing_attendance'] }} classes already missed in {{ subject.name }}
           </div>
           {% endif %}
-          {% endfor %}
+        {% endfor %}
+        
+        <!-- Todo section -->
+        <h3 class="border p-2 my-3 text-center">TO-DO</h3>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Due Date</th>
+              <th>Days Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td>{{ task['todo'] }}</td>
+              <td>{{ task['time_limit'] }}</td>
+              <td>{{ task['time_limit']|days_until }} days remaining</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Current Goals section -->
+        <h3 class="border p-2 my-3 text-center">Current Goals</h3>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Goal</th>
+              <th>Due Date</th>
+              <th>Days Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for goal in goals %}
+            <tr>
+              <td>{{ goal.goal }}</td>
+              <td>{{ goal.time }}</td>
+              <td>{{ goal.time |days_until }} days remaining</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>

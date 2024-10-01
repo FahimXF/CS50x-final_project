@@ -46,9 +46,21 @@ def index():
     for subject in subjects:
         sanitized_subject = re.sub(r'\W+', '_', subject)
         subject_info = db.execute(f"SELECT quiz1, quiz2, quiz3, quiz4, midterm, missing_attendance, credit FROM {sanitized_subject} WHERE student_id = ?", student_id)[0]
-        subjects_info.append({"name": subject, "info": subject_info})    
+        subjects_info.append({"name": subject, "info": subject_info}) 
 
-    return render_template("index.html", subjects=subjects_info)
+    goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
+    tasks_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])
+    if goals_json:
+        goals=json.loads(goals_json)
+    else:
+        goals=[] 
+
+    if tasks_json and tasks_json[0]["todos"]:
+        tasks = json.loads(tasks_json[0]["todos"])
+    else:
+        tasks = []  
+
+    return render_template("index.html", subjects=subjects_info, goals=goals,tasks=tasks)
 
 
 
@@ -67,7 +79,10 @@ def register():
         if not request.form.get("semester"):
             return apology("must provide semester", 400)
         if not (request.form.get("id").isdigit() or request.form.get("semester").isdigit()):
-            return apology("id must be a number", 400)
+            return apology("id or semester must be a number", 400)
+        if request.form.get("semester") not in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+            return apology("semester must be between 1 and 8", 400)
+        
         
         subjects = request.form.getlist("subject[]")
         credits = request.form.getlist("credit[]")
@@ -287,14 +302,6 @@ def todo():
     tasks = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])
     if tasks and tasks[0]["todos"]:
         tasks = json.loads(tasks[0]["todos"])
-        # Format the time_limit to show only the date
-        """for task in tasks:
-            if task["time_limit"]:
-                try:
-                    task["time_limit"] = datetime.strptime(task["time_limit"], "%Y-%m-%dT%H:%M").strftime("%Y-%m-%d")
-                except ValueError:
-                    # If the format is already %Y-%m-%d, no need to change it
-                    pass"""
     else:
         tasks = []
     return render_template("todo.html", tasks=tasks)
