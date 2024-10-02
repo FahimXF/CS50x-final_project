@@ -7,11 +7,15 @@
 {% block main %}
     <form action="/login" method="post">
         <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="id" placeholder="Student ID" type="text">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="id" placeholder="Student Id" type="number">
         </div>
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
         </div>
         <button class="btn btn-primary" type="submit">Log In</button>
     </form>
+
+    <div class="mt-3">
+        <a href="/change_password" class="btn btn-link">Change Password?</a>
+    </div>
 {% endblock %}

@@ -307,6 +307,31 @@ def todo():
     return render_template("todo.html", tasks=tasks)
 
 
+@app.route("/change_password", methods=["GET", "POST"])
+def change_password():
+    if request.method == "POST":
+        id, old_password, new_password = request.form.get(
+            "id"), request.form.get("old_password"), request.form.get("new_password")
+        if not (id or old_password or new_password):
+            return apology("Invalid Input")
+        rows = db.execute(
+            "SELECT * FROM students WHERE id = ?", request.form.get("id")
+        )
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(
+            rows[0]["hash"], old_password
+        ):
+            return apology("invalid username and/or password", 403)
+
+        db.execute("UPDATE students SET hash = ? WHERE id =?",
+                   generate_password_hash(new_password), id)
+        flash("Password Change Successful")
+        return redirect("/")
+
+    return render_template("change_password.html")
+
+
 
     
 
