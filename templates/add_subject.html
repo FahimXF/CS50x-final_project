@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Add Subject
+{% endblock %}
+
+{% block main %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Enter Subject</h1>
+    <form action="/add_subject" method="POST">
+        <div id="subject-inputs">
+            <div class="input-group mb-3">
+                <input type="text" name="subject" class="form-control" placeholder="Enter a Subject">
+            </div>
+            <div class="input-group mb-3">
+                <input type="number" name="credit" class="form-control" placeholder="Enter Credits">
+            </div>
+        </div>
+        <button class="btn btn-success mb-3" type="submit">Submit</button>
+    </form>
+    <h1 class="text-center mb-4">Current Subjects</h1>
+    <ul id="subjects" class="list-group">
+        {% for subject_id, subject in subjects %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ subject }}
+                <form action="/add_subject" method="POST" class="d-inline">
+                    <input type="hidden" name="subject_id" value="{{ subject_id }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

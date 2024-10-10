@@ -37,7 +37,14 @@
                         <span>{{ task['todo'] }}</span>
                     </div>
                     <span class="mx-auto">Due: {{ task['time_limit'] }}</span>
-                    <span class="ml-auto">{{ task['time_limit']|days_until }} days remaining</span>
+                    {% set days_remaining = task['time_limit']|days_until %}
+                    {% if days_remaining < 0 %}
+                        <span class="text-danger">
+                            Time Limit Expired {{ days_remaining|abs }} days ago
+                        </span>
+                        {% else %}
+                            {{ days_remaining }} days remaining
+                        {% endif %}
                 </form>
             </li>
         {% endfor %}

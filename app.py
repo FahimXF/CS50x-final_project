@@ -39,6 +39,8 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
+    if not session["user_id"]:
+        return redirect("/login")
     student_id = session["user_id"]
     subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
     subjects = json.loads(subjects_json)
@@ -86,6 +88,10 @@ def register():
         
         subjects = request.form.getlist("subject[]")
         credits = request.form.getlist("credit[]")
+
+        for credit in credits:
+            if int(credit) <= 0 or int(credit) > 3 or not credit.isdigit() :
+                return apology("Invalid Credit", 400)
         
         if not subjects or not credits or len(subjects) != len(credits):
             return apology("must provide subjects and credits", 400)
@@ -96,7 +102,7 @@ def register():
                        request.form.get("name"), 
                        generate_password_hash(request.form.get("password")), 
                        request.form.get("semester"),
-                       json.dumps(subjects))
+                       json.dumps(sorted(subjects)))
         except ValueError:
             return apology("id already exists", 400)
         
@@ -174,6 +180,8 @@ def marks():
     if request.method == "POST":
         student_id = session["user_id"]
         subject = request.form.get("subject")
+        if not subject:
+            return apology("must provide subject", 400)
         sanitized_subject = re.sub(r'\W+', '_', subject)
         subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
         subjects = json.loads(subjects_json)
@@ -331,6 +339,50 @@ def change_password():
 
     return render_template("change_password.html")
 
+@app.route("/add_subject", methods=["GET", "POST"])
+@login_required
+def add_subject():
+    if request.method == "POST":
+        if 'subject_id' in request.form:
+            subject_id = int(request.form.get("subject_id"))
+            student_id = session["user_id"]
+            subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
+            subjects = json.loads(subjects_json)
+            subject = subjects[subject_id]
+            sanitized_subject = re.sub(r'\W+', '_', subject)
+            subjects.remove(subject).sort()
+            db.execute("UPDATE students SET subjects = ? WHERE id = ?", json.dumps(subjects), student_id)
+            db.execute(f"DELETE FROM {sanitized_subject} WHERE student_id = ?", student_id)
+            flash("Subject Deleted Successfully")
+            return redirect("/add_subject")
+        else:
+            student_id = session["user_id"]
+            subject = request.form.get("subject")
+            credit = request.form.get("credit")
+            if not subject:
+                return apology("must provide subject", 400)
+            if not credit:
+                return apology("must provide credit", 400)
+            sanitized_subject = re.sub(r'\W+', '_', subject)
+            try:
+                db.execute(f"CREATE TABLE IF NOT EXISTS {sanitized_subject} (student_id INTEGER, quiz1 REAL DEFAULT 0, quiz2 REAL DEFAULT 0, quiz3 REAL DEFAULT 0, quiz4 REAL DEFAULT 0, midterm REAL DEFAULT 0, missing_attendance INTEGER DEFAULT 0, credit INTEGER, FOREIGN KEY(student_id) REFERENCES students(id))")
+                db.execute(f"INSERT INTO {sanitized_subject} (student_id, credit) VALUES (?, ?)", student_id, credit)
+            except ValueError:
+                return apology("error creating table or inserting data", 400)
+            
+            subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
+            subjects = json.loads(subjects_json)
+            subjects.append(subject)
+            subjects.sort()
+            db.execute("UPDATE students SET subjects = ? WHERE id = ?", json.dumps(subjects), student_id)
+            flash("Subject Added Successfully")
+            return redirect("/add_subject")
+    
+    subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", session["user_id"])[0]["subjects"]
+    subjects = json.loads(subjects_json) 
+    subjects_with_ids = list(enumerate(subjects))
+    
+    return render_template("add_subject.html", subjects=subjects_with_ids)
 
 
     

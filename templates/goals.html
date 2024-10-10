@@ -23,8 +23,19 @@
         <h1 class="text-center mb-4">Current Goals</h1>
         <ul id="goals" class="list-group">
             {% for goal in goals %}
-                <li class="list-group-item">
-                    {{ goal.goal }} - {{ goal.time }} ({{ goal.time | days_until }} days left)
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span >{{ goal.goal }}</span>
+                    <span class="mx-auto"> Due: {{ goal.time }}</span>
+                    <span>
+                        {% set days_remaining = goal.time | days_until %}
+                        {% if days_remaining < 0 %}
+                            <span class="text-danger">
+                                Time Limit Expired {{ days_remaining | abs }} days ago
+                            </span>
+                        {% else %}
+                            {{ days_remaining }} days remaining
+                        {% endif %}
+                    </span>
                 </li>
             {% endfor %}
         </ul>
@@ -37,7 +48,7 @@
             newInputGroup.className = 'input-group mb-3';
             newInputGroup.innerHTML = `
                 <input type="text" name="goal[]" class="form-control" placeholder="Enter a goal">
-                <input type="text" name="time[]" class="form-control" placeholder="Time limit in YEAR-MONTH-DAY">
+                <input type="date" name="time[]" class="form-control" placeholder="Time limit">
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary add-goal-btn">Add</button>
                 </div>

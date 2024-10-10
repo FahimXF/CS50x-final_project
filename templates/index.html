@@ -43,7 +43,8 @@ Index
             </thead>
             <tbody>
               {% set values = subject['info'].values() | list %}
-              {% set marks = values[:-2] | sum %}
+              {% set quiz = values[:4] | sort(reverse=True) %}
+              {% set marks = quiz[:3] | sum + values[4] %}
               {% for value in values[:-1] %}
               <tr>
                 <td>{{ value }}</td>
@@ -54,7 +55,7 @@ Index
               </tr>
             </tbody>
           </table>
-          {% if loop.index % 3 == 0 %}
+          {% if loop.index % 3 == 0 and loop.index < subjects | length %}
           </div>
           <div class="d-flex justify-content-between flex-wrap">
             <table class="table table-bordered mb-3" style="width: 15%;">
@@ -102,7 +103,12 @@ Index
             <tr>
               <td>{{ task['todo'] }}</td>
               <td>{{ task['time_limit'] }}</td>
-              <td>{{ task['time_limit']|days_until }} days remaining</td>
+              {% set days_remaining = task['time_limit']|days_until %}
+              {% if days_remaining < 0 %}
+              <td class="text-danger">Time Limit Expired {{ days_remaining|abs }} days ago</td>
+              {% else %}
+              <td>{{ days_remaining }} days remaining</td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>
@@ -123,7 +129,12 @@ Index
             <tr>
               <td>{{ goal.goal }}</td>
               <td>{{ goal.time }}</td>
-              <td>{{ goal.time |days_until }} days remaining</td>
+              {% set days_remaining = goal.time | days_until %}
+              {% if days_remaining < 0 %}
+              <td class="text-danger">Time Limit Expired {{ days_remaining | abs }} days ago</td>
+              {% else %}
+              <td>{{ days_remaining }} days remaining</td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>
