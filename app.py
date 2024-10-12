@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime,date
 import re
 
-from helpers import apology, login_required, days_until
+from helpers import apology, login_required, days_until, get_existing_todos
 
 
 exams = ["quiz1", "quiz2", "quiz3", "quiz4", "midterm"]
@@ -39,8 +39,6 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
-    if not session["user_id"]:
-        return redirect("/login")
     student_id = session["user_id"]
     subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
     subjects = json.loads(subjects_json)
@@ -174,14 +172,12 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
-@app.route("/marks", methods=["GET", "POST"])
+@app.route("/add_marks", methods=["GET", "POST"])
 @login_required
-def marks():
+def add_marks():
     if request.method == "POST":
         student_id = session["user_id"]
         subject = request.form.get("subject")
-        if not subject:
-            return apology("must provide subject", 400)
         sanitized_subject = re.sub(r'\W+', '_', subject)
         subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
         subjects = json.loads(subjects_json)
@@ -189,12 +185,12 @@ def marks():
             db.execute(f"UPDATE {sanitized_subject} SET {request.form.get('exam')} = ? WHERE student_id = ?", request.form.get("marks"), session["user_id"])
         except ValueError:
             return apology("error updating marks", 400)
-        return render_template("marks.html", exams=exams, subjects=subjects)
+        return render_template("add_marks.html", exams=exams, subjects=subjects)
     
     student_id = session["user_id"]
     subjects_json = db.execute("SELECT subjects FROM students WHERE id = ?", student_id)[0]["subjects"]
     subjects = json.loads(subjects_json)
-    return render_template("marks.html", subjects=subjects,exams=exams)
+    return render_template("add_marks.html", subjects=subjects,exams=exams)
 
 @app.route("/attendance", methods=["GET", "POST"])
 @login_required
@@ -220,61 +216,63 @@ def attendance():
 @app.route("/goals", methods=["GET", "POST"])
 @login_required
 def goals():
-    if request.method =="POST":
-        goals = request.form.getlist("goal[]")
-        times=request.form.getlist("time[]")
-        if not goals or not times or len(goals) != len(times):
-            return apology("must provide goals and times", 400)
-        goals_times = []
-        for goal, time in zip(goals, times):
-            goals_times.append({"goal": goal, "time": time})
+    user_id = session["user_id"]
     
+    if request.method == "POST":
+        goals = request.form.getlist("goal[]")
+        times = request.form.getlist("time[]")
+        
+        # Filter out empty goals and times
+        goals_times = [{"goal": goal, "time": time} for goal, time in zip(goals, times) if goal and time]
+        
+        if not goals_times:
+            return apology("must provide valid goals and times", 400)
+        
         # Retrieve existing goals from the database
-        existing_goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
-
-        if existing_goals_json:
-            existing_goals = json.loads(existing_goals_json)
-        else:
-            existing_goals = []
-
+        try:
+            existing_goals_json = db.execute("SELECT goals FROM students WHERE id = ?", user_id)[0]["goals"]
+            existing_goals = json.loads(existing_goals_json) if existing_goals_json else []
+        except Exception as e:
+            print(f"Error retrieving goals: {e}")
+            return apology("error retrieving goals", 400)
+        
         # Merge the new goals with the existing goals
         merged_goals = existing_goals + goals_times
-
+        
         # Convert the merged goals back to a JSON string
         merged_goals_json = json.dumps(merged_goals)
         
-    
         # Store the JSON string in the database
         try:
-            db.execute("UPDATE students SET goals = ? WHERE id = ?", merged_goals_json, session["user_id"])
-        except ValueError:
+            db.execute("UPDATE students SET goals = ? WHERE id = ?", merged_goals_json, user_id)
+        except Exception as e:
+            print(f"Error updating goals: {e}")
             return apology("error inserting goals", 400)
         
-        return render_template("goals.html",goals=merged_goals)
+        return redirect(url_for("goals"))
     
-    goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
-    if goals_json:
-        goals=json.loads(goals_json)
-    else:
-        goals=[]
-    return render_template("goals.html",goals=goals)
+    try:
+        goals_json = db.execute("SELECT goals FROM students WHERE id = ?", user_id)[0]["goals"]
+        goals = json.loads(goals_json) if goals_json else []
+    except Exception as e:
+        print(f"Error retrieving goals: {e}")
+        goals = []
+    
+    return render_template("goals.html", goals=goals)
 
 
 @app.route("/todo", methods=["GET", "POST"])
 @login_required
 def todo():
+    user_id = session["user_id"]
+    
     if request.method == "POST":
         if 'task_id' in request.form:
             task_id = int(request.form.get("task_id"))
-            # Retrieve existing todos from the database
-            existing_todos_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])[0]["todos"]
-            existing_todos = json.loads(existing_todos_json) if existing_todos_json else []
-            # Remove the task with the given task_id
+            existing_todos = get_existing_todos(user_id)
             existing_todos = [task for task in existing_todos if task["id"] != task_id]
-            # Convert the updated todos back to a JSON string
             updated_todos_json = json.dumps(existing_todos)
-            # Store the JSON string in the database
-            db.execute("UPDATE students SET todos = ? WHERE id = ?", updated_todos_json, session["user_id"])
+            db.execute("UPDATE students SET todos = ? WHERE id = ?", updated_todos_json, user_id)
         else:
             todos = request.form.getlist("todo[]")
             time_limits = request.form.getlist("time_limit[]")
@@ -284,34 +282,17 @@ def todo():
                 return apology("must provide time limits", 400)
             if len(todos) != len(time_limits):
                 return apology("todos and time limits must be of the same length", 400)
-            todos_list = []
-            for todo, time_limit in zip(todos, time_limits):
-                todos_list.append({"id": len(todos_list), "todo": todo, "done": False, "time_limit": time_limit})
-
-            # Retrieve existing todos from the database
-            existing_todos_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])[0]["todos"]
-
-            if existing_todos_json:
-                existing_todos = json.loads(existing_todos_json)
-            else:
-                existing_todos = []
-
-            # Merge the new todos with the existing todos
+            
+            existing_todos = get_existing_todos(user_id)
+            max_id = max([task["id"] for task in existing_todos], default=0)
+            todos_list = [{"id": max_id + i + 1, "todo": todo, "done": False, "time_limit": time_limit} for i, (todo, time_limit) in enumerate(zip(todos, time_limits))]
             merged_todos = existing_todos + todos_list
-
-            # Convert the merged todos back to a JSON string
             merged_todos_json = json.dumps(merged_todos)
-
-            # Store the JSON string in the database
-            db.execute("UPDATE students SET todos = ? WHERE id = ?", merged_todos_json, session["user_id"])
+            db.execute("UPDATE students SET todos = ? WHERE id = ?", merged_todos_json, user_id)
 
         return redirect(url_for("todo"))
 
-    tasks = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])
-    if tasks and tasks[0]["todos"]:
-        tasks = json.loads(tasks[0]["todos"])
-    else:
-        tasks = []
+    tasks = get_existing_todos(user_id)
     return render_template("todo.html", tasks=tasks)
 
 
@@ -350,7 +331,8 @@ def add_subject():
             subjects = json.loads(subjects_json)
             subject = subjects[subject_id]
             sanitized_subject = re.sub(r'\W+', '_', subject)
-            subjects.remove(subject).sort()
+            subjects.remove(subject)
+            subjects.sort()
             db.execute("UPDATE students SET subjects = ? WHERE id = ?", json.dumps(subjects), student_id)
             db.execute(f"DELETE FROM {sanitized_subject} WHERE student_id = ?", student_id)
             flash("Subject Deleted Successfully")
@@ -359,10 +341,6 @@ def add_subject():
             student_id = session["user_id"]
             subject = request.form.get("subject")
             credit = request.form.get("credit")
-            if not subject:
-                return apology("must provide subject", 400)
-            if not credit:
-                return apology("must provide credit", 400)
             sanitized_subject = re.sub(r'\W+', '_', subject)
             try:
                 db.execute(f"CREATE TABLE IF NOT EXISTS {sanitized_subject} (student_id INTEGER, quiz1 REAL DEFAULT 0, quiz2 REAL DEFAULT 0, quiz3 REAL DEFAULT 0, quiz4 REAL DEFAULT 0, midterm REAL DEFAULT 0, missing_attendance INTEGER DEFAULT 0, credit INTEGER, FOREIGN KEY(student_id) REFERENCES students(id))")

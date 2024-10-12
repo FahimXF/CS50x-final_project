@@ -5,11 +5,11 @@ Add Marks
 {% endblock %}
 
 {% block main %}
-    <form action="/marks" method="post" class="container mt-4">
+    <form action="/add_marks" method="post" class="container mt-4">
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="subject" class="form-label">Subject</label>
-                <select name="subject" id="subject" class="form-select">
+                <select name="subject" id="subject" class="form-select" required>
                     <option disabled selected value="">Select Subject</option>
                     {% for subject in subjects %}
                         <option value="{{ subject }}">{{ subject }}</option>
@@ -18,7 +18,7 @@ Add Marks
             </div>
             <div class="col-md-6">
                 <label for="exam" class="form-label">Exam</label>
-                <select name="exam" id="exam" class="form-select">
+                <select name="exam" id="exam" class="form-select" required>
                     <option disabled selected value="">Select Exam</option>
                     {% for exam in exams %}
                         <option value="{{ exam }}">{{ exam }}</option>
@@ -28,7 +28,7 @@ Add Marks
         </div>
         <div class="mb-3">
             <label for="marks" class="form-label">Marks</label>
-            <input autocomplete="off" autofocus class="form-control" name="marks" id="marks" placeholder="Enter Marks" type="number">
+            <input autocomplete="off" autofocus class="form-control" name="marks" id="marks" placeholder="Enter Marks" type="number" required>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

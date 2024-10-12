@@ -10,11 +10,10 @@
         <form action="/goals" method="POST">
             <div id="goal-inputs">
                 <div class="input-group mb-3">
-                    <input type="text" name="goal[]" class="form-control" placeholder="Enter a Goal">
-                    <input type="date" name="time[]" class="form-control" placeholder="Time Limit">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-primary add-goal-btn">Add</button>
-                    </div>
+                    <label for="goal" class="sr-only">Goal</label>
+                    <input type="text" name="goal[]" class="form-control" placeholder="Enter a Goal" id="goal">
+                    <label for="time" class="sr-only">Time Limit</label>
+                    <input type="date" name="time[]" class="form-control" placeholder="Time Limit" id="time">
                 </div>
             </div>
             <button type="button" id="add-goal" class="btn btn-secondary mb-3">Add Goal</button>
@@ -24,8 +23,8 @@
         <ul id="goals" class="list-group">
             {% for goal in goals %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span >{{ goal.goal }}</span>
-                    <span class="mx-auto"> Due: {{ goal.time }}</span>
+                    <span>{{ goal.goal }}</span>
+                    <span class="mx-auto">Due: {{ goal.time }}</span>
                     <span>
                         {% set days_remaining = goal.time | days_until %}
                         {% if days_remaining < 0 %}
@@ -47,11 +46,10 @@
             const newInputGroup = document.createElement('div');
             newInputGroup.className = 'input-group mb-3';
             newInputGroup.innerHTML = `
+                <label for="goal" class="sr-only">Goal</label>
                 <input type="text" name="goal[]" class="form-control" placeholder="Enter a goal">
+                <label for="time" class="sr-only">Time Limit</label>
                 <input type="date" name="time[]" class="form-control" placeholder="Time limit">
-                <div class="input-group-append">
-                    <button type="button" class="btn btn-primary add-goal-btn">Add</button>
-                </div>
             `;
             goalInputs.appendChild(newInputGroup);
         });

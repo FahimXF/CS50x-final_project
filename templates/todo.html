@@ -7,12 +7,15 @@
     <form action="/todo" method="POST" class="mb-4">
         <div class="form-row align-items-center">
             <div class="col-auto">
-                <input type="text" name="todo[]" class="form-control mb-2" placeholder="Enter a new task">
+                <label for="new-task" class="sr-only">New Task</label>
+                <input type="text" id="new-task" name="todo[]" class="form-control mb-2" placeholder="Enter a new task">
             </div>
             <div class="col-auto" id="time_limit_div" style="display: none;">
+                <label for="time_limit" class="sr-only">Time Limit</label>
                 <input type="date" name="time_limit[]" class="form-control mb-2" id="time_limit">
             </div>
             <div class="col-auto">
+                <label for="date-options" class="sr-only">Due Date</label>
                 <select class="form-control mb-2" id="date-options">
                     <option value="">Select due date</option>
                     <option value="1">1 day</option>
@@ -30,10 +33,10 @@
     <ul class="list-group">
         {% for task in tasks %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <form method="POST" class="d-flex w-100 justify-content-between align-items-center">
+                <form action="/todo" method="POST" class="d-flex w-100 justify-content-between align-items-center">
                     <div>
                         <input type="hidden" name="task_id" value="{{ task['id'] }}">
-                        <input type="checkbox" onclick="this.form.submit()">
+                        <input type="checkbox" name="done" onclick="this.form.submit()">
                         <span>{{ task['todo'] }}</span>
                     </div>
                     <span class="mx-auto">Due: {{ task['time_limit'] }}</span>
@@ -42,9 +45,9 @@
                         <span class="text-danger">
                             Time Limit Expired {{ days_remaining|abs }} days ago
                         </span>
-                        {% else %}
-                            {{ days_remaining }} days remaining
-                        {% endif %}
+                    {% else %}
+                        {{ days_remaining }} days remaining
+                    {% endif %}
                 </form>
             </li>
         {% endfor %}
