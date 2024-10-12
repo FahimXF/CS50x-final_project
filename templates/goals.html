@@ -9,11 +9,13 @@
         <h1 class="text-center mb-4">Enter Goal</h1>
         <form action="/goals" method="POST">
             <div id="goal-inputs">
-                <div class="input-group mb-3">
-                    <label for="goal" class="sr-only">Goal</label>
-                    <input type="text" name="goal[]" class="form-control" placeholder="Enter a Goal" id="goal">
-                    <label for="time" class="sr-only">Time Limit</label>
-                    <input type="date" name="time[]" class="form-control" placeholder="Time Limit" id="time">
+                <div class="form-group mb-3">
+                    <label for="goal">Goal</label>
+                    <input type="text" name="goal[]" class="form-control" placeholder="Enter a Goal" id="goal" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="time">Time Limit</label>
+                    <input type="date" name="time[]" class="form-control" placeholder="Time Limit" id="time" required>
                 </div>
             </div>
             <button type="button" id="add-goal" class="btn btn-secondary mb-3">Add Goal</button>
@@ -44,12 +46,12 @@
         document.getElementById('add-goal').addEventListener('click', function() {
             const goalInputs = document.getElementById('goal-inputs');
             const newInputGroup = document.createElement('div');
-            newInputGroup.className = 'input-group mb-3';
+            newInputGroup.className = 'form-group mb-3';
             newInputGroup.innerHTML = `
-                <label for="goal" class="sr-only">Goal</label>
-                <input type="text" name="goal[]" class="form-control" placeholder="Enter a goal">
-                <label for="time" class="sr-only">Time Limit</label>
-                <input type="date" name="time[]" class="form-control" placeholder="Time limit">
+                <label for="goal">Goal</label>
+                <input type="text" name="goal[]" class="form-control" placeholder="Enter a goal" required>
+                <label for="time">Time Limit</label>
+                <input type="date" name="time[]" class="form-control" placeholder="Time limit" required>
             `;
             goalInputs.appendChild(newInputGroup);
         });
