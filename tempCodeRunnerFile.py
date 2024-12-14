@@ -1,0 +1,1 @@
+.text-indigo-600.text-base.hover\\:underline

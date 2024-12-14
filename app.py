@@ -7,6 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import re
 
 from helpers import apology, login_required, days_until, get_existing_todos
+from leetcode import problems
 
 
 exams = ["quiz1", "quiz2", "quiz3", "quiz4", "midterm"]
@@ -48,7 +49,7 @@ def index():
         subjects_info.append({"name": subject, "info": subject_info}) 
 
     goals_json = db.execute("SELECT goals FROM students WHERE id = ?", session["user_id"])[0]["goals"]
-    tasks_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])
+    tasks_json = db.execute("SELECT todos FROM students WHERE id = ?", session["user_id"])   
     if goals_json:
         goals=json.loads(goals_json)
     else:
@@ -57,9 +58,10 @@ def index():
     if tasks_json and tasks_json[0]["todos"]:
         tasks = json.loads(tasks_json[0]["todos"])
     else:
-        tasks = []  
+        tasks = []
+    
 
-    return render_template("index.html", subjects=subjects_info, goals=goals,tasks=tasks)
+    return render_template("index.html", subjects=subjects_info, goals=goals,tasks=tasks,problems=problems)
 
 
 
