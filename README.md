@@ -1,20 +1,301 @@
 # TRACKR
 #### Video Demo:  <https://youtu.be/_v_Rk44sjDA>
-#### Description:
-TRACKR is built using FLASK, Javascript, Python, HTML, CSS, Bootstrap. The modules used are CS50,re,json,datetime,werkzeug,flask,flask_session. It's a personal academic tracker that will work for the students of Islamic University of Technology, a Subsidiary Organ of OIC since it's designed in accordance with the grading system of this university. There are 4 quizes throughout the semester out of which best 3 marks are taken, 1 midterm exam and the semester final examination. Total mark for single credit hour courses is 100. Here's the list of pages with their functionalities -
+# TRACKR
 
-    Register: A student can register with an ID, password,name and the subjects he wants to track with their corresponding credit hours in the register page. He can add as many subjects as wants. Cautionary measures such as lack of any input in the input fields will lead to apology page which was taken from CS50's Finance. Same will happen if someone doesn't provide credit hours for all the subjects , They are all stored in the database . For the password, only the hash is stored
+> A personal academic tracker built specifically for students of **Islamic University of Technology (IUT)**.
 
-    Add Marks : This page contains three input fields namely subject,exam, marks. Once registered anyone can choose among the subjects they registered with and provide marks for quiz1,quiz2,quiz3,quiz4,midterm as input in this page.After providing necessary input, one can click on the submit button the inputs will be stored in the database tracker.db .The input fields have been set to required to prevent noneType inputs
+TRACKR helps IUT students keep track of their academic performance, attendance, goals, and daily tasks throughout the semester. The grading calculations and attendance rules are designed according to the **IUT grading system**.
 
-    Missing Attendance : This page is dedicated to taking input from the users incase he or she missed any attendance in any particular course. Note that when anyone submits missing attendance multiple times for a single course, they will be added with the previous ones not replaced. Once someone has crossed certain threshold the tracker will send precaution messages to the index page as missing 6 attendances in a single course through out the semester results in termination from the semester final or midterm exam. Missing more than 3 attendances result in deduction in marks for attendance. So the warning will begin to show in the index page after 2 attendances have already been missed as precaution. The missing attendance will be stored in the database
+---
 
-    Add/Remove Subjects: Since a student might accidently register with erronious subjects, he or she might want to remove it and add the correct one. This page exactly works for that .The list of subject already added appear with remove button attached and there's input field for adding newer subject with corresponding credit. One might remove the subjects already added or add newer subjects. This will also help when a student advances on to the next semester and register for new subjects and remove the obsolete ones.
+## Features
 
-    TODO: This page is dedicated to making a simple to-do list with time limit. Once a to-do is inputted, it will be added in the database. It will also appear under the input fields with tick mark box attached to it and due date. Clicking on the tick mark will result in marking the to-do as done and remove it from the page and database.
+- 📊 Track quiz, midterm, and final exam marks
+- 📈 Automatically calculate required final exam marks for an **A+**
+- 📚 Manage subjects and credit hours
+- ✅ Personal To-Do list with deadlines
+- 🎯 Long-term Goals tracker
+- ⚠ Attendance warning system
+- 🔒 Secure password hashing
+- 👤 Multi-user support
 
-    Goals: This page is very much similar to TODO in appearence as well as functionality except there's no tick mark attached to the goals and you can add multiple goal at the same time. Since Goals are long term, completion feature wasn't added. List of Goals given as input with corresponding time limits will also appear here.
+---
 
-    Index: This is where every input given comes back together. The page cotains on big table which is divided into two columns- The bigger one on the left for displaying the marks in all of the exams and current missing attendance for each subject and the smaller one on the right for attendance alert, TO-DOs, Goals. The marks section also displays required marks for A+ in each subject. As metioned before, best 3 quiz marks are taken out of the 4 taken. The program automatically calculates the sum of the best 3 quizes and midterm and finds the required marks for A+ corresponding to the credit hour of the course. All of this are shown in a table for each subject in the Marks column . So the number of tables is the number of subjects. The first part of the second column shows the alerts related to attendance for each subjects if there's any. The second part displays the TO-DO list with due dates in a table. The third section displays the same for Current Goals.
+## Tech Stack
 
-    Change Password : As the name suggests, this page is for changing password if one wants to . It takes the id,old password and new password as input from the users and replace the hash of previous password with the hash of the new one.
+### Backend
+- Python
+- Flask
+
+### Frontend
+- HTML
+- CSS
+- Bootstrap
+- JavaScript
+
+### Database
+- SQLite (`tracker.db`)
+
+### Python Modules
+- Flask
+- Flask-Session
+- CS50
+- Werkzeug
+- datetime
+- json
+- re
+
+---
+
+# Project Structure
+
+```
+TRACKR/
+│
+├── static/
+├── templates/
+├── tracker.db
+├── app.py
+├── helpers.py
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Pages & Functionalities
+
+## 1. Register
+
+Allows new students to create an account by providing:
+
+- Student ID
+- Name
+- Password
+- Subjects
+- Corresponding Credit Hours
+
+### Features
+
+- Register unlimited subjects
+- Passwords are securely stored as hashes
+- Input validation
+- Prevents empty fields
+- Prevents missing credit hour entries
+- Error handling through the CS50 Finance apology page
+
+All information is stored in the SQLite database.
+
+---
+
+## 2. Add Marks
+
+Students can enter marks for every registered subject.
+
+### Supported Exams
+
+- Quiz 1
+- Quiz 2
+- Quiz 3
+- Quiz 4
+- Midterm
+
+### Features
+
+- Subject selection from registered courses
+- Marks stored in database
+- Required fields prevent empty submissions
+
+---
+
+## 3. Missing Attendance
+
+Track missed classes for each course.
+
+### Features
+
+- Multiple submissions accumulate attendance misses
+- Stores attendance records in database
+- Automatically generates warnings
+
+### Attendance Rules
+
+| Missed Attendance | Consequence |
+|------------------|-------------|
+| >2 | Warning displayed |
+| >3 | Attendance marks deducted |
+| ≥6 | Risk of being barred from Midterm/Final |
+
+Warnings appear on the dashboard automatically.
+
+---
+
+## 4. Add / Remove Subjects
+
+Manage subjects after registration.
+
+### Features
+
+- Remove mistakenly added subjects
+- Add new subjects
+- Assign corresponding credit hours
+- Useful when progressing to a new semester
+
+---
+
+## 5. TODO
+
+Simple task management page.
+
+### Features
+
+- Add tasks
+- Set due dates
+- Mark tasks as completed
+- Completed tasks are removed from the page and database
+
+---
+
+## 6. Goals
+
+Track long-term academic goals.
+
+### Features
+
+- Add multiple goals
+- Assign deadlines
+- Goals remain until manually removed
+
+Unlike TODOs, goals are intended for long-term planning and therefore do not include a completion checkbox.
+
+---
+
+## 7. Dashboard (Index)
+
+The main dashboard combines all academic information in one place.
+
+### Marks Section
+
+For every subject, the dashboard displays:
+
+- Quiz 1–4 marks
+- Best 3 quiz scores (automatically selected)
+- Midterm marks
+- Missing attendance
+- Required Final Exam marks for an **A+**
+
+The required final mark is calculated automatically based on:
+
+- Credit hour
+- Best three quizzes
+- Midterm marks
+- IUT grading policy
+
+Each subject has its own table.
+
+### Sidebar
+
+Displays:
+
+- Attendance alerts
+- Current TODO list
+- Current Goals
+
+---
+
+## 8. Change Password
+
+Allows users to securely update their password.
+
+### Inputs
+
+- Student ID
+- Old Password
+- New Password
+
+The previous password hash is replaced with the hash of the new password after verification.
+
+---
+
+# Automatic Calculations
+
+TRACKR automatically performs the following calculations:
+
+- Selects the best **3 out of 4 quizzes**
+- Calculates current obtained marks
+- Calculates required Final Exam marks for an **A+**
+- Tracks attendance violations
+- Generates attendance warnings
+
+---
+
+# Database
+
+The application stores:
+
+- User information
+- Password hashes
+- Registered subjects
+- Credit hours
+- Quiz marks
+- Midterm marks
+- Attendance records
+- TODO items
+- Goals
+
+SQLite is used as the database backend.
+
+---
+
+# Security
+
+- Passwords are never stored in plain text.
+- Password hashing is handled using **Werkzeug**.
+- Server-side validation prevents invalid input.
+
+---
+
+# Future Improvements
+
+- Final exam mark entry
+- CGPA calculator
+- Semester-wise record history
+- GPA trend visualization
+- Course-wise statistics
+- Data export (PDF/Excel)
+- Email reminders for deadlines
+- Responsive mobile interface
+
+---
+
+# Screenshots
+
+TODO
+
+# Installation
+
+```bash
+git clone https://github.com/yourusername/TRACKR.git
+
+cd TRACKR
+
+pip install -r requirements.txt
+
+flask run
+```
+
+---
+
+# License
+
+This project was developed as an academic project.
+
+---
+
+# Author
+
+**Shahriar Fahim**
+
+Electrical and Electronic Engineering (EEE)
+
+Islamic University of Technology (IUT)
